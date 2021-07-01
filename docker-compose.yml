@@ -1,0 +1,10 @@
+version: '3.5'
+
+services:
+    os:
+        container_name: os
+        image: os:1.0
+        volumes:
+            - ./volumes:/home
+        platform: linux/amd64
+        tty: true

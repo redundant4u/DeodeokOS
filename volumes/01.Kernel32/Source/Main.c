@@ -31,7 +31,7 @@ BOOL kInitiakizeKernel64Area(void)
 
     pdwCurrentAddress = (DWORD*) 0x100000;
 
-    while((DWORD) pdwCurrentAddress < 0x60000)
+    while((DWORD) pdwCurrentAddress < 0x600000)
     {
         *pdwCurrentAddress = 0x00;
 

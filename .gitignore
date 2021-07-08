@@ -6,3 +6,6 @@
 
 *.bin
 Disk.img
+
+volumes/01.Kernel32/Temp
+volumes/04.Utility/00.ImageMaker/ImageMaker.exe

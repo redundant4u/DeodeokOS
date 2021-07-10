@@ -8,6 +8,19 @@ START:
     mov ds, ax
     mov es, ax
 
+    mov ax, 0x2401
+    int 0x15
+
+    jc .A20GATEERROR
+    jmp .A20GATESUCCESS
+
+.A20GATEERROR:
+    in al, 0x92
+    or al, 0x02
+    and al, 0xFE
+    out 0x92, al
+
+.A20GATESUCCESS:
     cli
     lgdt [ GDTR ]
 

@@ -4,8 +4,11 @@
 **/.DS_Store
 **/._.DS_Store
 
+.vscode
+
 *.bin
 Disk.img
 
 volumes/01.Kernel32/Temp
+volumes/02.Kernel64/Temp
 volumes/04.Utility/00.ImageMaker/ImageMaker.exe

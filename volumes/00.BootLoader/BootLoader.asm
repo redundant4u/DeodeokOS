@@ -7,6 +7,8 @@ jmp 0x07C0:START
 
 TOTALSECTORCOUNT: dw 0x02
 
+KERNEL32SECTORCOUNT: dw 0x02
+
 START:
     mov ax, 0x07C0
     mov ds, ax

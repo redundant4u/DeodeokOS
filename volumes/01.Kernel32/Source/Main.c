@@ -9,7 +9,7 @@ void kCopyKernel64ImageTo2Mbyte(void);
 
 void Main(void)
 {
-    DWORD i;
+    // DWORD i;
     DWORD dwEAX, dwEBX, dwECX, dwEDX;
     char vcVendorString[13] = { 0, };
 

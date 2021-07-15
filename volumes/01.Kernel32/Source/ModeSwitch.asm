@@ -41,10 +41,10 @@ kSwitchAndExecute64bitKernel:
     or eax, 0x20
     mov cr4, eax
 
-    mov eax, 0x100000
+    mov eax, 0x100000 ; PML4 테이블
     mov cr3, eax
 
-    mov ecx, 0xC0000080
+    mov ecx, 0xC0000080 ; IA32_EFER MSR 레지스터
     rdmsr
 
     or eax, 0x0100

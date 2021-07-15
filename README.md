@@ -6,7 +6,7 @@
 - Apple M1 Macbook Air
 - Docker(ubuntu 18.04 / amd64)
 - gcc, qemu...
-
+가
 x86_64 환경에서 작성된 OS 이므로 M1인 경우 docker의 platform 옵션을 추가하셔야 합니다.
 
 ```
@@ -17,6 +17,7 @@ docker exec -it os bash
 ```
 
 # 변경점
+- 210716: 키보드 드라이버 추가
 - 210712: 보호모드에서 IA-32e 모드로 전환
 - 210708: 첫 번째 커널 작성
 - 210701: 부트로더 추가

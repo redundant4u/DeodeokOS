@@ -128,6 +128,5 @@ void kInitializeTSSSegment(TSSSEGMENT* pstTSS);
 void kInitializeIDTTables(void);
 void kSetIDTEntry(IDTENTRY* pstEntry, void* pvHandler,
     WORD wSelector, BYTE bIST, BYTE bFlags, BYTE bType);
-void kDummyHandler(void);
 
 #endif

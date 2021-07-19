@@ -8,5 +8,8 @@ void kOutPortByte(WORD wPort, BYTE bData);
 void kLoadGDTR(QWORD qwGDTEAddress);
 void kLoadTR(WORD wTSSSegmentOffset);
 void kLoadIDTR(QWORD qwIDTRAddress);
+void kEnableInterrupt(void);
+void kDisableInterrupt(void);
+QWORD kReadRFLAGS(void);
 
 #endif

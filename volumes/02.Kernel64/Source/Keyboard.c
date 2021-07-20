@@ -1,6 +1,7 @@
 #include "Types.h"
 #include "AssemblyUtility.h"
 #include "Keyboard.h"
+#include "Queue.h"
 
 BOOL kIsOutputBufferFull(void)
 {
@@ -20,24 +21,12 @@ BOOL kIsInputBufferFull(void)
     return FALSE;
 }
 
-BOOL kActivateKeyboard(void)
+BOOL kWaitForACKAndPutOtherScanCode(void)
 {
     int i, j;
+    BYTE bData;
+    BOOL bResult = FALSE;
 
-    kOutPortByte(0x64, 0xAE);
-
-    // 입력버퍼가 빌 때까지 기다렸다가 키보드에 활성화 커맨드 전송
-    for(i = 0; i < 0xFFFF; i++)
-    {
-        if(kIsInputBufferFull() == FALSE)
-        {
-            break;
-        }
-    }
-
-    kOutPortByte(0x60, 0xF4);
-
-    // ACK가 올 때까지 대기
     for(j = 0; j < 100; j++)
     {
         for(i = 0; i < 0xFFFF; i++)
@@ -48,12 +37,44 @@ BOOL kActivateKeyboard(void)
             }
         }
 
-        if(kInPortByte(0x60) == 0xFA)
+        bData = kInPortByte(0x60);
+        if(bData == 0xFA)
         {
-            return TRUE;
+            bResult = TRUE;
+            break;
+        }
+        else
+        {
+            kConvertScanCodeAndPutQueue(bData);
         }
     }
-    return FALSE;
+    return bResult;
+}
+
+BOOL kActivateKeyboard(void)
+{
+    int i;
+    BOOL bPreviousInterrupt;
+    BOOL bResult;
+
+    bPreviousInterrupt = kSetInterruptFlag(FALSE);
+
+    kOutPortByte(0x64, 0xAE);
+
+    for(i = 0; i < 0xFFFF; i++)
+    {
+        if(kIsInputBufferFull() == FALSE)
+        {
+            break;
+        }
+    }
+    kOutPortByte(0x60, 0xF4);
+
+    // ACK가 올때까지 대기
+    bResult = kWaitForACKAndPutOtherScanCode();
+
+    kSetInterruptFlag(bPreviousInterrupt);
+    return bResult;
 }
 
 BOOL kGetKeyboardScanCode(void)
@@ -67,7 +88,12 @@ BOOL kGetKeyboardScanCode(void)
 
 BOOL kChangeKeyboardLED(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn)
 {
-    int i, j;
+    int i;
+    BOOL bPreviousInterrupt;
+    BOOL bResult;
+    BYTE bData;
+
+    bPreviousInterrupt = kSetInterruptFlag(FALSE);
 
     // 키보드에 LED 변경 커맨드 전송하고 커맨드가 처리될 때까지 대기
     for(i = 0; i < 0xFFFF; i++)
@@ -87,24 +113,11 @@ BOOL kChangeKeyboardLED(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn)
         }
     }
 
-    // 키보드가 LED 상태 변경 커맨드를 가져갔으므로 ACK가 올 때까지 대기
-    for(j = 0; j < 100; j++)
+    // ACK가 올 때까지 대기
+    bResult = kWaitForACKAndPutOtherScanCode();
+    if(bResult == FALSE)
     {
-        for(i = 0; i < 0xFFFF; i++)
-        {
-            if(kIsOutputBufferFull() == TRUE)
-            {
-                break;
-            }
-        }
-
-        if(kInPortByte(0x60) == 0xFA)
-        {
-            break;
-        }
-    }
-    if(j >= 100)
-    {
+        kSetInterruptFlag(bPreviousInterrupt);
         return FALSE;
     }
 
@@ -118,28 +131,11 @@ BOOL kChangeKeyboardLED(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn)
         }
     }
 
-    // 키보드가 LED 데이터를 가져갔으므로 ACK가 올 때까지 대기함
-    for(j = 0; j < 100; j++)
-    {
-        for(i = 0; i < 0xFFFF; i++)
-        {
-            if(kIsOutputBufferFull() == TRUE)
-            {
-                break;
-            }
-        }
+    // ACK가 올 때까지 대기
+    bResult = kWaitForACKAndPutOtherScanCode();
+    kSetInterruptFlag(bPreviousInterrupt);
 
-        if(kInPortByte(0x60) == 0xFA)
-        {
-            break;
-        }
-    }
-    if(j >= 100)
-    {
-        return FALSE;
-    }
-
-    return TRUE;
+    return bResult;
 }
 
 void kEnableA20Gate(void)
@@ -193,7 +189,13 @@ void kReboot(void)
     }
 }
 
+// 키보드 상태를 관리하는 키보드 매니저
 static KEYBOARDMANAGER gs_stKeyboardManager = { 0, };
+
+static QUEUE gs_stKeyQueue;
+static KEYDATA gs_vstKeyQueueBuffer[KEY_MAXQUEUECOUNT];
+
+// 스캔 코드를 ASCII 코드로 변환하는 테이블
 static KEYMAPPINGENTRY gs_vstKeyMappingTable[ KEY_MAPPINGTABLEMAXCOUNT ] =
 {
     /*  0   */  {   KEY_NONE        ,   KEY_NONE        },
@@ -460,4 +462,48 @@ BOOL kConvertScanCodeToASCIICode(BYTE bScanCode, BYTE* pbASCIICode, BOOL* pbFlag
 
     UpdateCombinationKeyStatusAndLED(bScanCode);
     return TRUE;
+}
+
+BOOL kInitializeKeyboard(void)
+{
+    kInitializeQueue(&gs_stKeyQueue, gs_vstKeyQueueBuffer,
+        KEY_MAXQUEUECOUNT, sizeof(KEYDATA));
+    
+    return kActivateKeyboard();
+}
+
+BOOL kConvertScanCodeAndPutQueue(BYTE bScanCode)
+{
+    KEYDATA stData;
+    BOOL bResult = FALSE;
+    BOOL bPreviousInterrupt;
+
+    stData.bScanCode = bScanCode;
+
+    if(kConvertScanCodeToASCIICode(bScanCode, &(stData.bASCIICode),
+        &(stData.bFlags)) == TRUE)
+    {
+        bPreviousInterrupt = kSetInterruptFlag(FALSE);
+        bResult = kPutQueue(&gs_stKeyQueue, &stData);
+        kSetInterruptFlag(bPreviousInterrupt);
+    }
+
+    return bResult;
+}
+
+BOOL kGetKeyFromKeyQueue(KEYDATA* pstData)
+{
+    BOOL bResult;
+    BOOL bPreviousInterrupt;
+
+    if(kIsQueueEmpty(&gs_stKeyQueue) == TRUE)
+    {
+        return FALSE;
+    }
+
+    bPreviousInterrupt = kSetInterruptFlag(FALSE);
+    bResult = kGetQueue(&gs_stKeyQueue, pstData);
+    kSetInterruptFlag(bPreviousInterrupt);
+
+    return bResult;
 }

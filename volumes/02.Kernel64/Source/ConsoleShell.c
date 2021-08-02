@@ -18,7 +18,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
     { "rdtsc", "Read Time Stamp Counter", kReadTimeStampCounter },
     { "cpuspeed", "Measure Processor Speed", kMeasureProcessorSpeed },
     { "date", "Show Date And Time", kShowDateAndTime },
-    { "createtask", "Create Task", kCreateTestTask },
+    { "createtask", "Create Task, ex) createtask 1(type) 10(count)", kCreateTestTask },
 };
 
 // 실제 쉘을 구현하는 코드
@@ -357,20 +357,119 @@ void kTestTask(void)
     }
 }
 
-void kCreateTestTask(const char* pcParameterBuffer)
+void kTestTask1(void)
 {
-    KEYDATA stData;
-    int i = 0;
+    BYTE bData;
+    int i = 0, iX = 0, iY = 0, iMargin;
+    CHARACTER* pstScreen = (CHARACTER*) CONSOLE_VIDEOMEMORYADDRESS;
+    TCB* pstRunningTask;
 
-    kSetUpTask(&(gs_vstTask[1]), 1, 0, (QWORD) kTestTask, &(gs_vstStack), sizeof(gs_vstStack));
+    pstRunningTask = kGetRunningTask();
+    iMargin = (pstRunningTask->stLink.qwID & 0xFFFFFFFF) % 10;
 
     while(1)
     {
-        kPrintf("[%d] This message is from kConsoleShell. Press any key to switch TestTask\n", i++);
-        if(kGetCh() == 'q')
+        switch(i)
         {
-            break;
+            case 0:
+                iX++;
+                if(iX >= (CONSOLE_WIDTH - iMargin))
+                {
+                    i = 1;
+                }
+                break;
+
+            case 1:
+                iY++;
+                if(iY >= (CONSOLE_HEIGHT - iMargin))
+                {
+                    i = 2;
+                }
+                break;
+
+            case 2:
+                iX--;
+                if(iX < iMargin)
+                {
+                    i = 3;
+                }
+                break;
+
+            case 3:
+                iY--;
+                if(iY < iMargin)
+                {
+                    i = 0;
+                }
+                break;
         }
-        kSwitchContext(&(gs_vstTask[0].stContext), &(gs_vstTask[1].stContext));
+
+        pstScreen[iY * CONSOLE_WIDTH + iX].bCharactor = bData;
+        pstScreen[iY * CONSOLE_WIDTH + iX].bAttribute = bData & 0x0F;
+        bData++;
+
+        kSchedule();
+    }
+}
+
+void kTestTask2(void)
+{
+    int i = 0, iOffset;
+    CHARACTER* pstScreen = (CHARACTER*) CONSOLE_VIDEOMEMORYADDRESS;
+    TCB* pstRunningTask;
+    char vcData[4] = { '-', '\\', '|', '/' };
+
+    pstRunningTask = kGetRunningTask();
+    iOffset = (pstRunningTask->stLink.qwID & 0xFFFFFFFF) * 2;
+    iOffset = CONSOLE_WIDTH * CONSOLE_HEIGHT -
+            (iOffset % (CONSOLE_WIDTH * CONSOLE_HEIGHT));
+    
+    while(1)
+    {
+        pstScreen[iOffset].bCharactor = vcData[i % 4];
+        pstScreen[iOffset].bAttribute = (iOffset % 15) + 1;
+        i++;
+
+        kSchedule();
+    }
+}
+
+void kCreateTestTask(const char* pcParameterBuffer)
+{
+    PARAMETERLIST stList;
+    char vcType[30];
+    char vcCount[30];
+    int i;
+
+    kInitializeParameter(&stList, pcParameterBuffer);
+    kGetNextParameter(&stList, vcType);
+    kGetNextParameter(&stList, vcCount);
+
+    switch(kAToI(vcType, 10))
+    {
+        case 1:
+            for(i = 0; i < kAToI(vcCount, 10); i++)
+            {
+                if(kCreateTask(0, (QWORD) kTestTask1) == NULL)
+                {
+                    break;
+                }
+            }
+
+            kPrintf("Task1 %d Created\n", i);
+            break;
+
+        case 2:
+        default:
+            for(i = 0; i < kAToI(vcCount, 10); i++)
+            {
+                if(kCreateTask(0, (QWORD) kTestTask2) == NULL)
+                {
+                    break;
+                }
+            }
+
+            kPrintf("Task2 %d Created\n", i);
+            break;
     }
 }

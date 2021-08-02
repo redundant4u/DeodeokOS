@@ -2,6 +2,9 @@
 #include "PIC.h"
 #include "Keyboard.h"
 #include "Console.h"
+#include "Utility.h"
+#include "Task.h"
+#include "Descriptor.h"
 
 void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode)
 {
@@ -54,4 +57,27 @@ void kKeyboardHandler(int iVectorNumber)
     }
 
     kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
+}
+
+void kTimerHandler(int iVectorNumber)
+{
+    char vcBuffer[] = "[INT:  , ]";
+    static int g_iTimerInterruptCount = 0;
+
+    vcBuffer[5] = '0' + iVectorNumber / 10;
+    vcBuffer[6] = '0' + iVectorNumber % 10;
+
+    vcBuffer[8] = '0' + g_iTimerInterruptCount;
+    g_iTimerInterruptCount = (g_iTimerInterruptCount + 1) % 10;
+    kPrintStringXY(70, 0, vcBuffer);
+
+    kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
+
+    g_qwTickCount++;
+
+    kDecreaseProcessorTime();
+    if(kIsProcessorTimeExpired() == TRUE)
+    {
+        kScheduleInInterrupt();
+    }
 }

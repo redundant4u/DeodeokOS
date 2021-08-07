@@ -42,6 +42,22 @@
 
 #define TASK_PROCESSORTIME      5
 
+#define TASK_MAXREADYLISTCOUNT  5
+
+#define TASK_FLAGS_HIGHEST      0
+#define TASK_FLAGS_HIGH         1
+#define TASK_FLAGS_MEDIUM       2
+#define TASK_FLAGS_LOW          3
+#define TASK_FLAGS_LOWEST       4
+#define TASK_FLAGS_WAIT         0xFF
+
+#define TASK_FLAGS_ENDTASK      0x8000000000000000
+#define TASK_FLAGS_IDLE         0x0800000000000000
+
+#define GETPRIORITY(x)              (x & 0xFF)
+#define SETPRIORITY(x, priority)    (x = ((x & 0xFFFFFFFFFFFFFF00) | priority))
+#define GETTCBOFFSET(x)             (x & 0xFFFFFFFF)
+
 #pragma pack(push, 1)
 
 typedef struct kContextStruct
@@ -74,7 +90,11 @@ typedef struct kSchedulerStruct
 {
     TCB* pstRunningTask;
     int iProcessorTime;
-    LIST stReadyList;
+    LIST vstReadyList[TASK_MAXREADYLISTCOUNT];
+    LIST stWaitList;
+    int viExecuteCount[TASK_MAXREADYLISTCOUNT];
+    QWORD qwProcessorLoad;
+    QWORD qwSpendProcessorTimeInIdleTask;
 } SCHEDULER;
 
 #pragma pack(pop)
@@ -92,10 +112,23 @@ void kInitializeScheduler(void);
 void kSetRunningTask(TCB* pstTask);
 TCB* kGetRunningTask(void);
 TCB* kGetNextTaskToRun(void);
-void kAddTaskToReadyList(TCB* pstTask);
+BOOL kAddTaskToReadyList(TCB* pstTask);
 void kSchedule(void);
 BOOL kScheduleInInterrupt(void);
 void kDecreaseProcessorTime(void);
 BOOL kIsProcessorTimeExpired(void);
+TCB* kRemoveTaskFromReadyList(QWORD qwTaskID);
+BOOL kChangePriority(QWORD qwID, BYTE bPriority);
+BOOL kEndTask(QWORD qwTaskID);
+void kExitTask(void);
+int kGetReadyTaskCount(void);
+int kGetTaskCount(void);
+TCB* kGetTCBInTCBPool(int iOffset);
+BOOL kIsTaskExist(QWORD qwID);
+QWORD kGetProcessorLoad(void);
+
+// 유휴 태스크 관련
+void kIdleTask(void);
+void kHaltProcessorByLoad(void);
 
 #endif

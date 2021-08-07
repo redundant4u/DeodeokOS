@@ -114,7 +114,7 @@ BYTE kGetCh(void)
     {
         while(kGetKeyFromKeyQueue(&stData) == FALSE)
         {
-            ;
+            // kSchedule();
         }
 
         if(stData.bFlags & KEY_FLAGS_DOWN)

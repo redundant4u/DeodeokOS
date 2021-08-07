@@ -33,16 +33,20 @@ void kInitializeParameter(PARAMETERLIST* pstList, const char* pcParameter);
 int kGetNextParameter(PARAMETERLIST* pstList, char* pcParameter);
 
 // 커맨드를 처리하는 함수
-void kHelp(const char* pcParameterBuffer);
-void kCls(const char* pcParameterBuffer);
-void kShowTotalRAMSize(const char* pcParameterBuffer);
-void kStringToDecimalHexTest(const char* pcParameterBuffer);
-void kShutdown(const char* pcParameterBuffer);
-void kSetTimer(const char* pcParameterBuffer);
-void kWaitUsingPIT(const char* pcParameterBuffer);
-void kReadTimeStampCounter(const char* pcParameterBuffer);
-void kMeasureProcessorSpeed(const char* pcParameterBuffer);
-void kShowDateAndTime(const char* pcParameterBuffer);
-void kCreateTestTask(const char* pxParameterBuffer);
+static void kHelp(const char* pcParameterBuffer);
+static void kCls(const char* pcParameterBuffer);
+static void kShowTotalRAMSize(const char* pcParameterBuffer);
+static void kStringToDecimalHexTest(const char* pcParameterBuffer);
+static void kShutdown(const char* pcParameterBuffer);
+static void kSetTimer(const char* pcParameterBuffer);
+static void kWaitUsingPIT(const char* pcParameterBuffer);
+static void kReadTimeStampCounter(const char* pcParameterBuffer);
+static void kMeasureProcessorSpeed(const char* pcParameterBuffer);
+static void kShowDateAndTime(const char* pcParameterBuffer);
+static void kCreateTestTask(const char* pxParameterBuffer);
+static void kChangeTaskPriority(const char* pcParamterBuffer);
+static void kShowTaskList(const char* pcParamterBuffer);
+static void kKillTask(const char* pcParamterBuffer);
+static void kCPULoad(const char* pcParamterBuffer);
 
 #endif

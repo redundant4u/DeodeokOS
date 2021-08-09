@@ -6,6 +6,7 @@
 #include "PIT.h"
 #include "RTC.h"
 #include "Task.h"
+#include "Synchronization.h"
 
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
 {
@@ -22,8 +23,9 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
     { "createtask", "Create Task, ex) createtask 1(type) 10(count)", kCreateTestTask },
     { "changepriority", "Change Task Priority, ex) changepriority 1(ID) 2(Priority)", kChangePriority },
     { "tasklist", "Show Task List", kShowTaskList },
-    { "killtask", "End Task, ex) killtask 1(ID)", kKillTask },
+    { "killtask", "End Task, ex) killtask 1(ID) or 0xffffffff(All Task)", kKillTask },
     { "cpuload", "Show Processor Load", kCPULoad },
+    { "testmutex", "Test Mutex Function", kTestMutex },
 };
 
 // 실제 쉘을 구현하는 코드
@@ -536,6 +538,8 @@ static void kKillTask(const char* pcParamterBuffer)
     PARAMETERLIST stList;
     char vcID[30];
     QWORD qwID;
+    TCB* pstTCB;
+    int i;
 
     kInitializeParameter(&stList, pcParamterBuffer);
     kGetNextParameter(&stList, vcID);
@@ -547,6 +551,39 @@ static void kKillTask(const char* pcParamterBuffer)
     else
     {
         qwID = kAToI(vcID, 10);
+    }
+
+    if(qwID != 0xFFFFFFFF)
+    {
+        kPrintf("Kill Task ID [0x%q] ", qwID);
+        if(kEndTask(qwID) == TRUE)
+        {
+            kPrintf("Success\n");
+        }
+        else
+        {
+            kPrintf("Fail\n");
+        }
+    }
+    else
+    {
+        for(i = 2; i < TASK_MAXCOUNT; i++)
+        {
+            pstTCB = kGetTCBInTCBPool(i);
+            qwID = pstTCB->stLink.qwID;
+            if((qwID >> 32) != 0)
+            {
+                kPrintf("Kill Task ID [0x%q] ", qwID);
+                if(kEndTask(qwID) == TRUE)
+                {
+                    kPrintf("Success\n");
+                }
+                else
+                {
+                    kPrintf("Fail\n");
+                }
+            }
+        }
     }
 
     kPrintf("Kill Task ID [0x$%q] ", qwID);
@@ -563,4 +600,53 @@ static void kKillTask(const char* pcParamterBuffer)
 static void kCPULoad(const char* pcParameterBuffer)
 {
     kPrintf("Processor Load: %d%%\n", kGetProcessorLoad());
+}
+
+static MUTEX gs_stMutex;
+static volatile QWORD gs_qwAddr;
+
+static void kPrintNumberTask(void)
+{
+    int i, j;
+    QWORD qwTickCount;
+
+    qwTickCount = kGetTickCount();
+    while((kGetTickCount() - qwTickCount) < 50)
+    {
+        kSchedule();
+    }
+
+    for(i = 0; i < 5; i++)
+    {
+        kLock(&(gs_stMutex));
+        kPrintf("Task ID [0x%Q] Value [%d]\n", kGetRunningTask()->stLink.qwID, gs_qwAddr);
+        gs_qwAddr += 1;
+        kUnlock(&(gs_stMutex));
+
+        for(j = 0; j < 30000; j++) ;
+    }
+
+
+    qwTickCount = kGetTickCount();
+    while((kGetTickCount() - qwTickCount) < 1000)
+    {
+        kSchedule();
+    }
+
+    kExitTask();
+}
+
+static void kTestMutex(const char* pcParameterBuffer)
+{
+    int i;
+    gs_qwAddr = 1;
+
+    kInitializeMutex(&(gs_stMutex));
+
+    for(i = 0; i < 3; i++)
+    {
+        kCreateTask(TASK_FLAGS_LOW, (QWORD) kPrintNumberTask);
+    }
+    kPrintf("Wait Until %d Task End\n", i);
+    kGetCh();
 }

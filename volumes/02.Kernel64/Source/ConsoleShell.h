@@ -48,5 +48,6 @@ static void kChangeTaskPriority(const char* pcParamterBuffer);
 static void kShowTaskList(const char* pcParamterBuffer);
 static void kKillTask(const char* pcParamterBuffer);
 static void kCPULoad(const char* pcParamterBuffer);
+static void kTestMutex(const char* pcParameterBuffer);
 
 #endif

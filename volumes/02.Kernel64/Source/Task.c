@@ -610,7 +610,7 @@ void kIdleTask(void)
 
                         pstChildThread = GETTCBFROMTHREADLINK(pstThreadLink);
 
-                        kAddListToTail(&(pstTask->stChildThreadList), &(pstChildThread->stLink.qwID));
+                        kAddListToTail(&(pstTask->stChildThreadList), &(pstChildThread->stThreadLink));
 
                         kEndTask(pstChildThread->stLink.qwID);
                     }

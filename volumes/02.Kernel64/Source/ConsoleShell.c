@@ -602,16 +602,6 @@ static void kKillTask(const char* pcParamterBuffer)
             }
         }
     }
-
-    kPrintf("Kill Task ID [0x$%q] ", qwID);
-    if(kEndTask(qwID) == TRUE)
-    {
-        kPrintf("Success\n");
-    }
-    else
-    {
-        kPrintf("Fail\n");
-    }
 }
 
 static void kCPULoad(const char* pcParameterBuffer)

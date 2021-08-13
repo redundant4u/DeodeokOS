@@ -20,6 +20,7 @@ int kDecimalToString(long lValue, char* pcBuffer);
 int kSPrintf(char* pcBuffer, const char* pcFormatString, ...);
 int kVSPrintf(char* pcBuffer, const char* pcFormatString, va_list ap);
 QWORD kGetTickCount(void);
+void kSleep(QWORD qwMillisecond);
 
 extern volatile QWORD g_qwTickCount;
 

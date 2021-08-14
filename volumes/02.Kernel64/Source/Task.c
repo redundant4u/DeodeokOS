@@ -116,6 +116,8 @@ TCB* kCreateTask(QWORD qwFlags, void* pvMemoryAddress, QWORD qwMemorySize,
 
     kInitializeList(&(pstTask->stChildThreadList));
 
+    pstTask->bFPUUsed = FALSE;
+
     bPreviousFlag = kLockForSystemData();
     kAddTaskToReadyList(pstTask);
     kUnlockForSystemData(bPreviousFlag);
@@ -177,6 +179,7 @@ void kInitializeScheduler(void)
 
     gs_stScheduler.qwSpendProcessorTimeInIdleTask = 0;
     gs_stScheduler.qwProcessorLoad = 0;
+    gs_stScheduler.qwLastFPUUsedTaskID = TASK_INVALIDID;
 }
 
 void kSetRunningTask(TCB* pstTask)
@@ -197,7 +200,7 @@ TCB* kGetRunningTask(void)
     pstRunningTask = gs_stScheduler.pstRunningTask;
     kUnlockForSystemData(bPreviousFlag);
 
-    return gs_stScheduler.pstRunningTask;
+    return pstRunningTask;
 }
 
 static TCB* kGetNextTaskToRun(void)
@@ -244,7 +247,12 @@ static BOOL kAddTaskToReadyList(TCB* pstTask)
     BYTE bPriority;
 
     bPriority = GETPRIORITY(pstTask->qwFlags);
-    if(bPriority >= TASK_MAXREADYLISTCOUNT)
+    if(bPriority == TASK_FLAGS_WAIT)
+    {
+        kAddListToTail(&(gs_stScheduler.stWaitList), pstTask);
+        return TRUE;
+    }
+    else if(bPriority >= TASK_MAXREADYLISTCOUNT)
     {
         return FALSE;
     }
@@ -270,6 +278,10 @@ static TCB* kRemoveTaskFromReadyList(QWORD qwTaskID)
     }
 
     bPriority = GETPRIORITY(pstTarget->qwFlags);
+    if(bPriority >= TASK_MAXREADYLISTCOUNT)
+    {
+        return NULL;
+    }
 
     pstTarget = kRemoveList(&(gs_stScheduler.vstReadyList[bPriority]), qwTaskID);
     return pstTarget;
@@ -343,6 +355,16 @@ void kSchedule(void)
             TASK_PROCESSORTIME - gs_stScheduler.iProcessorTime;
     }
 
+    // 다음에 수행할 태스크가 FPU를 쓴 태스크가 아니라면 TS 비트 설정
+    if(gs_stScheduler.qwLastFPUUsedTaskID != pstNextTask->stLink.qwID)
+    {
+        kSetTS();
+    }
+    else
+    {
+        kClearTS();
+    }
+
     if(pstRunningTask->qwFlags & TASK_FLAGS_ENDTASK)
     {
         kAddListToTail(&(gs_stScheduler.stWaitList), pstRunningTask);
@@ -399,6 +421,15 @@ BOOL kScheduleInInterrupt(void)
         kAddTaskToReadyList(pstRunningTask);
     }
     kUnlockForSystemData(bPreviousFlag);
+
+    if(gs_stScheduler.qwLastFPUUsedTaskID != pstNextTask->stLink.qwID)
+    {
+        kSetTS();
+    }
+    else
+    {
+        kClearTS();
+    }
 
     kMemCpy(pcContextAddress, &(pstNextTask->stContext), sizeof(CONTEXT));
 
@@ -492,8 +523,9 @@ int kGetTaskCount(void)
     int iTotalCount;
     BOOL bPreviousFlag;
 
-    bPreviousFlag = kLockForSystemData();
     iTotalCount = kGetReadyTaskCount();
+
+    bPreviousFlag = kLockForSystemData();
     iTotalCount += kGetListCount(&(gs_stScheduler.stWaitList)) + 1;
     kUnlockForSystemData(bPreviousFlag);
     
@@ -643,7 +675,7 @@ void kIdleTask(void)
                 kFreeTCB(qwTaskID);
                 kUnlockForSystemData(bPreviousFlag);
 
-                kPrintf("IDLE: Task ID[0x%q] is completely ended.\n", pstTask->stLink.qwID);
+                kPrintf("IDLE: Task ID[0x%q] is completely ended.\n", qwTaskID);
             }
         }
         kSchedule();
@@ -667,4 +699,15 @@ void kHaltProcessorByLoad(void)
     {
         kHlt();
     }
+}
+
+// FPU 관련
+QWORD kGetLastFPUUsedTaskID(void)
+{
+    return gs_stScheduler.qwLastFPUUsedTaskID;
+}
+
+void kSetLastFPUUsedTaskID(QWORD qwTaskID)
+{
+    gs_stScheduler.qwLastFPUUsedTaskID = qwTaskID;
 }

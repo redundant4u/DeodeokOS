@@ -70,7 +70,7 @@ typedef struct kContextStruct
     QWORD vqRegister[TASK_REGISTERCOUNT];
 } CONTEXT;
 
-typedef struct kTaskControllerBlockStruct
+typedef struct kTaskControlBlockStruct
 {
     LISTLINK stLink;
 
@@ -82,14 +82,20 @@ typedef struct kTaskControllerBlockStruct
     // 이하 스레드 정보
     LISTLINK stThreadLink;
 
-    LIST stChildThreadList;
-
     QWORD qwParentProcessID;
+
+    QWORD vqwFPUContext[512 / 8];
+
+    LIST stChildThreadList;
 
     CONTEXT stContext;
 
     void* pvStackAddress;
     QWORD qwStackSize;
+
+    BOOL bFPUUsed;
+
+    char vcPadding[11];
 } TCB;
 
 typedef struct kTCBPoolManagerStruct
@@ -109,6 +115,7 @@ typedef struct kSchedulerStruct
     int viExecuteCount[TASK_MAXREADYLISTCOUNT];
     QWORD qwProcessorLoad;
     QWORD qwSpendProcessorTimeInIdleTask;
+    QWORD qwLastFPUUsedTaskID;
 } SCHEDULER;
 
 #pragma pack(pop)
@@ -146,5 +153,9 @@ static TCB* kGetProcessByThread(TCB* pstThread);
 // 유휴 태스크 관련
 void kIdleTask(void);
 void kHaltProcessorByLoad(void);
+
+// FPU 관련
+QWORD kGetLastFPUUsedTaskID(void);
+void kSetLastFPUUsedTaskID(QWORD qwTaskID);
 
 #endif

@@ -4,7 +4,7 @@
 #include "Types.h"
 
 #define CONSOLESHELL_MAXCOMMANDBUFFERCOUNT  300
-#define CONSOLESHELL_PROMOTMESSAGE          "DeoDeok>> "
+#define CONSOLESHELL_PROMPTMESSAGE          "DeoDeok>> "
 
 typedef void (*CommandFunction) (const char* pcParameter);
 
@@ -52,5 +52,6 @@ static void kTestMutex(const char* pcParameterBuffer);
 static void kCreateThreadTask(void);
 static void kTestThread(const char* pcParameterBuffer);
 static void kShowMatrix(const char* pcParameterBuffer);
+static void kTestPIE(const char* pcParameterBuffer);
 
 #endif

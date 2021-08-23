@@ -114,7 +114,7 @@ BYTE kGetCh(void)
     {
         while(kGetKeyFromKeyQueue(&stData) == FALSE)
         {
-            // kSchedule();
+            kSchedule();
         }
 
         if(stData.bFlags & KEY_FLAGS_DOWN)
@@ -129,7 +129,7 @@ void kPrintStringXY(int iX, int iY, const char* pcString)
     CHARACTER* pstScreen = (CHARACTER*) CONSOLE_VIDEOMEMORYADDRESS;
     int i;
 
-    pstScreen += (iY * 80) + iX;
+    pstScreen += (iY * CONSOLE_WIDTH) + iX;
 
     for(i = 0; pcString[i] != 0; i++)
     {

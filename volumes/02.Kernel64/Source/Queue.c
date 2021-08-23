@@ -5,7 +5,7 @@ void kInitializeQueue(QUEUE* pstQueue, void* pvQueueBuffer,
 {
     pstQueue->iMaxDataCount = iMaxDataCount;
     pstQueue->iDataSize = iDataSize;
-    pstQueue->pvQueueArrary = pvQueueBuffer;
+    pstQueue->pvQueueArray = pvQueueBuffer;
 
     pstQueue->iPutIndex = 0;
     pstQueue->iGetIndex = 0;
@@ -39,7 +39,7 @@ BOOL kPutQueue(QUEUE* pstQueue, const void* pvData)
         return FALSE;
     }
 
-    kMemCpy((char*) pstQueue->pvQueueArrary + (pstQueue->iDataSize *
+    kMemCpy((char*) pstQueue->pvQueueArray + (pstQueue->iDataSize *
             pstQueue->iPutIndex), pvData, pstQueue->iDataSize);
     
     pstQueue->iPutIndex = (pstQueue->iPutIndex + 1) % pstQueue->iMaxDataCount;
@@ -55,7 +55,7 @@ BOOL kGetQueue(QUEUE* pstQueue, void* pvData)
         return FALSE;
     }
 
-    kMemCpy(pvData, (char*) pstQueue->pvQueueArrary + (pstQueue->iDataSize *
+    kMemCpy(pvData, (char*) pstQueue->pvQueueArray + (pstQueue->iDataSize *
             pstQueue->iGetIndex), pstQueue->iDataSize);
 
     pstQueue->iGetIndex = (pstQueue->iGetIndex + 1) % pstQueue->iMaxDataCount;

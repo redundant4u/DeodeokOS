@@ -10,7 +10,7 @@ typedef struct kQueueManagerStruct
     int iDataSize;
     int iMaxDataCount;
 
-    void* pvQueueArrary;
+    void* pvQueueArray;
     int iPutIndex;
     int iGetIndex;
 

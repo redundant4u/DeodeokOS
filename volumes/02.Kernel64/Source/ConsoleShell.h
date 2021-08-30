@@ -57,5 +57,8 @@ static void kShowDynamicMemoryInformation(const char* pcParameterBuffer);
 static void kTestSequentialAllocation(const char* pcParameterBuffer);
 static void kTestRandomAllocation(const char* pcParameterBuffer);
 static void kRandomAllocationTask(void);
+static void kShowHDDInformation(const char* pcParameterBuffer);
+static void kReadSector(const char* pcParameterBuffer);
+static void kWriteSector(const char* pcParameterBuffer);
 
 #endif

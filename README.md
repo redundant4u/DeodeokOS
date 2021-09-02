@@ -20,6 +20,7 @@ docker exec -it os bash
 - '64비트 멀티코어 OS 원리와 구조' 서적에서 소개하는 QEMU 환경이 0.10.4 버전이라 최신 QEMU를 사용한다면 OS가 제대로 올라오지 않습니다. 필자는 QEMU 2 버전대를 쓰고 있으며 이를 해결하려면 부트로더의 수정이 필요합니다. [Bootloader.asm](https://github.com/redundant4u/DeodeokOS/blob/main/volumes/00.BootLoader/BootLoader.asm)의 80번 줄 ```cmp al, 19```를 ```cmp al, 37```로 변경하면 작동이 됩니다.
 
 # 변경점
+- 210902: 간단한 파일 시스템 구현
 - 210830: 하드디스크 드라이버 추가
 - 210824: 동적 메모리 할당 구현
 - 210813: 멀티스레딩 구현

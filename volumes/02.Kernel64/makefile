@@ -1,5 +1,5 @@
 NASM64 = nasm -f elf64
-GCC64 = x86_64-linux-gnu-gcc -c -m64 -ffreestanding
+GCC64 = x86_64-linux-gnu-gcc -c -m64 -ffreestanding -g
 LD64 = x86_64-linux-gnu-ld -melf_x86_64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
 OBJCOPY64 = x86_64-linux-gnu-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 

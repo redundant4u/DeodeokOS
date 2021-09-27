@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach to QEMU",
+            "executable": "${workspaceFolder}/volumes/02.Kernel64/Temp/Kernel64.elf",
+            "gdbpath": "${workspaceFolder}/volumes/tools/gdb/bin/x86_64-pc-linux-gnu-gdb",
+            "target": "localhost:1234",
+            "remote": true,
+            "cwd": "${workspaceFolder}/volumes",
+            "autorun": [
+                "set substitute-path /home ${workspaceRoot}/volumes"
+            ]
+        }
+    ]
+}

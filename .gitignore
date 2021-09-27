@@ -4,8 +4,6 @@
 **/.DS_Store
 **/._.DS_Store
 
-.vscode
-
 *.bin
 Disk.img
 

@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Docker Container Start",
+            "type": "shell",
+            "command": "docker start os",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "QEMU",
+            "type": "shell",
+            "command": "docker exec -it os bash -c \"sh build.sh\"",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "QEMU Debug",
+            "type": "shell",
+            "command": "docker exec -it os bash -c \"sh qemu_debug.sh\"",
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}

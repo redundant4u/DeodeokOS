@@ -12,7 +12,7 @@
             }
         },
         {
-            "label": "QEMU",
+            "label": "QEMU Build",
             "type": "shell",
             "command": "docker exec -it os bash -c \"sh build.sh\"",
             "group": "build",

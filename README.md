@@ -1,5 +1,5 @@
 # DeodeokOS
-[64비트 멀티코어 OS 원리와 구조](https://www.hanbit.co.kr/store/books/look.php?p_code=B3548683222)를 서적을 바탕으로 작성된 OS 프로젝트 입니다.
+[64비트 멀티코어 OS 원리와 구조](https://www.hanbit.co.kr/store/books/look.php?p_code=B3548683222) 서적을 바탕으로 작성된 OS 프로젝트 입니다.
 
 *개인 기록용이므로 잦은 변경 및 오류가 있을 수 있습니다!*
 # 환경 및 구축
@@ -29,9 +29,6 @@ docker exec -it os bash
 ```
 
 ```bash
-docker exec -it os bash
-./build.sh
-
 gdb
 target remote:1234
 file 02.Kernel64/Temp/Kernel64.elf

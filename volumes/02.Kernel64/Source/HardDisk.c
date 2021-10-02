@@ -205,7 +205,7 @@ int kReadHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, c
 
     // 범위 검사 최대 256 섹터 처리
     if((gs_stHDDManager.bHDDDetected == FALSE) || (iSectorCount <= 0) || (256 < iSectorCount) ||
-        ((dwLBA + iSectorCount) >= gs_stHDDManager.stHDDInformation.dwToalSectors))
+        ((dwLBA + iSectorCount) >= gs_stHDDManager.stHDDInformation.dwTotalSectors))
     {
         return 0;
     }
@@ -301,7 +301,7 @@ int kWriteHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, 
     BOOL bWaitResult;
 
     if((gs_stHDDManager.bCanWrite = FALSE) || (iSectorCount <= 0) || (256 < iSectorCount) ||
-        ((dwLBA + iSectorCount) >= gs_stHDDManager.stHDDInformation.dwToalSectors))
+        ((dwLBA + iSectorCount) >= gs_stHDDManager.stHDDInformation.dwTotalSectors))
     {
         return 0;
     }

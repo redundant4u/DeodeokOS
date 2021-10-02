@@ -66,7 +66,7 @@ typedef struct kHDDInfomrationStruct
     WORD vwModelNumber[20];
     WORD vwReserved2[13];
 
-    DWORD dwToalSectors;
+    DWORD dwTotalSectors;
     WORD vwReserved3[196];
 } HDDINFORMATION;
 

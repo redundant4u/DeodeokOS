@@ -77,7 +77,7 @@ typedef struct kHDDManagerStruct
     BOOL bHDDDetected;
     BOOL bCanWrite;
 
-    volatile BOOL bPrimaryInterruptOcccur;
+    volatile BOOL bPrimaryInterruptOccur;
     volatile BOOL bSecondaryInterruptOccur;
     MUTEX stMutex;
 

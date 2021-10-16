@@ -6,7 +6,7 @@ BOOL kInitializeHDD(void)
 {
     kInitializeMutex(&(gs_stHDDManager.stMutex));
 
-    gs_stHDDManager.bPrimaryInterruptOcccur = FALSE;
+    gs_stHDDManager.bPrimaryInterruptOccur = FALSE;
     gs_stHDDManager.bSecondaryInterruptOccur = FALSE;
 
     kOutPortByte(HDD_PORT_PRIMARYBASE + HDD_PORT_INDEX_DIGITALOUTPUT, 0);
@@ -84,7 +84,7 @@ void kSetHDDInterruptFlag(BOOL bPrimary, BOOL bFlag)
 {
     if(bPrimary == TRUE)
     {
-        gs_stHDDManager.bPrimaryInterruptOcccur = bFlag;
+        gs_stHDDManager.bPrimaryInterruptOccur = bFlag;
     }
     else
     {
@@ -100,7 +100,7 @@ static BOOL kWaitForHDDInterrupt(BOOL bPrimary)
 
     while(kGetTickCount() - qwTickCount <= HDD_WAITTIME)
     {
-        if((bPrimary == TRUE) && (gs_stHDDManager.bPrimaryInterruptOcccur == TRUE))
+        if((bPrimary == TRUE) && (gs_stHDDManager.bPrimaryInterruptOccur == TRUE))
         {
             return TRUE;
         }

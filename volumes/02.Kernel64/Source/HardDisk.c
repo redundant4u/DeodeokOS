@@ -132,14 +132,14 @@ BOOL kReadHDDInformation(BOOL bPrimary, BOOL bMaster, HDDINFORMATION* pstHDDInfo
     }
 
     kLock(&(gs_stHDDManager.stMutex));
-
-    // LBA 어드레스와 드라이브 및 헤드에 관련된 레지스터 설정
+    
     if(kWaitForHDDNoBusy(bPrimary) == FALSE)
     {
         kUnlock(&(gs_stHDDManager.stMutex));
         return FALSE;
     }
 
+    // LBA 어드레스와 드라이브 및 헤드에 관련된 레지스터 설정
     if(bMaster == TRUE)
     {
         bDriveFlag = HDD_DRIVEANDHEAD_LBA;

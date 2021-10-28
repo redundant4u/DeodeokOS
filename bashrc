@@ -83,6 +83,11 @@ alias la='ls -A'
 alias l='ls -CF'
 alias c='clear'
 
+alias b='/home/build.sh'
+alias q='/home/qemu.sh'
+alias d='/home/qemu_debug.sh'
+alias serial='/home/qemu_serial.sh'
+
 # Alias definitions.
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.

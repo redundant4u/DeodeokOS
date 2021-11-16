@@ -12,6 +12,8 @@
 #include "FileSystem.h"
 #include "SerialPort.h"
 #include "MPConfigurationTable.h"
+#include "LocalAPIC.h"
+#include "MultiProcessor.h"
 
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
 {
@@ -53,6 +55,7 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
     { "flush", "Flush File System Cache", kFlushCache },
     { "download", "Download Data From Serial ex) download a.txt", kDownloadFile },
     { "showmpinfo", "Show MP Configuration Table Information", kShowMPConfigurationTable },
+    { "startap", "Start Application Processor", kStartApplicationProcessor },
 };
 
 // 실제 쉘을 구현하는 코드
@@ -1947,4 +1950,15 @@ static void kDownloadFile(const char* pcParameterBuffer)
 static void kShowMPConfigurationTable(const char* pcParameterBuffer)
 {
     kPrintMPConfigurationTable();
+}
+
+static void kStartApplicationProcessor(const char* pcParameterBuffer)
+{
+    if(kStartUpApplicationProcessor() == FALSE)
+    {
+        kPrintf("Application Processor Start Fail\n");
+        return ;
+    }
+    kPrintf("Application Processor Start Success\n");
+    kPrintf("Bootstrap Processor [APID ID : %d] Start Application Processor\n", kGetAPICID());
 }

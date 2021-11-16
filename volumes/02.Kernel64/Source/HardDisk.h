@@ -95,6 +95,7 @@ static BYTE kReadHDDStatus(BOOL bPrimary);
 static BOOL kIsHDDBusy(BOOL bPrimary);
 static BOOL kIsHDDReady(BOOL bPrimary);
 static BOOL kWaitForHDDNoBusy(BOOL bPrimary);
+static BOOL kWaitForHDDReady(BOOL bPrimary);
 static BOOL kWaitForHDDInterrupt(BOOL bPrimary);
 
 #endif

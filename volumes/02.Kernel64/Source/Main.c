@@ -10,10 +10,23 @@
 #include "HardDisk.h"
 #include "FileSystem.h"
 #include "SerialPort.h"
+#include "MultiProcessor.h"
+
+void MainForApplicationProcessor(void);
 
 void Main(void)
 {
     int iCursorX, iCursorY;
+
+    // BSP 플래그를 읽어서 Application Processor이면 코어용 초기화 함수로 이동
+    if(*((BYTE*) BOOTSTRAPPROCESSOR_FLAGADDRESS) == 0)
+    {
+        MainForApplicationProcessor();
+    }
+
+    // Bootstrap Processor가 부팅을 완료했으므로 0x7C09에 있는 Application Processor를
+    // 나타내는 플래그를 0으로 설정하여 Application Processor용으로 코드 실행 경로 변경
+    *((BYTE*) BOOTSTRAPPROCESSOR_FLAGADDRESS) = 0;
 
     kInitializeConsole(0, 10);
 
@@ -95,4 +108,25 @@ void Main(void)
     kCreateTask(TASK_FLAGS_LOWEST | TASK_FLAGS_THREAD | TASK_FLAGS_SYSTEM | TASK_FLAGS_IDLE,
                 0, 0, (QWORD) kIdleTask);
     kStartConsoleShell();
+}
+
+void MainForApplicationProcessor(void)
+{
+    QWORD qwTickCount;
+
+    kLoadGDTR(GDTR_STARTADDRESS);
+
+    kLoadTR(GDT_TSSSEGMENT + (kGetAPICID() * sizeof(GDTENTRY16)));
+
+    kLoadIDTR(IDTR_STARTADDRESS);
+
+    qwTickCount = kGetTickCount();
+    while(1)
+    {
+        if(kGetTickCount() - qwTickCount > 1000)
+        {
+            qwTickCount = kGetTickCount();
+            kPrintf("Application Processor [APIC ID: %d] is Activated\n", kGetAPICID());
+        }
+    }
 }

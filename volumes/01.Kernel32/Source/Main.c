@@ -2,6 +2,8 @@
 #include "Page.h"
 #include "ModeSwitch.h"
 
+#define BOOTSTRAPPROCESSOR_FLAGADDRESS 0x7C09
+
 void kPrintString(int iX, int iY, const char* pcString);
 BOOL kInitiakizeKernel64Area(void);
 BOOL kIsMemoryEnough(void);
@@ -12,6 +14,13 @@ void Main(void)
     // DWORD i;
     DWORD dwEAX, dwEBX, dwECX, dwEDX;
     char vcVendorString[13] = { 0, };
+
+    // Application Processor이면 아래 코드를 생략하고 바로 64비트 모드로 전환
+    if(*((BYTE*) BOOTSTRAPPROCESSOR_FLAGADDRESS) == 0)
+    {
+        kSwitchAndExecute64bitKernel();
+        while(1);
+    }
 
     kPrintString(0, 3, "Protected Mode C Language Kernel Start......[Pass]");
 

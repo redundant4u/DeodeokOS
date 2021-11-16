@@ -8,6 +8,7 @@ global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
 global kSwitchContext, kHlt, kTestAndSet
 global kInitializeFPU, kSaveFPUContext, kLoadFPUContext, kSetTS, kClearTS
+global kEnableGlobalLocalAPIC
 
 kInPortByte:
     push rdx
@@ -229,4 +230,25 @@ kOutPortWord:
 
     pop rax
     pop rdx
+    ret
+
+kEnableGlobalLocalAPIC:
+    push rax
+    push rcx
+    push rdx
+
+    ; IA32_APIC_BASE MSR은 레지스터 어드레스 27에 위치
+    ; MSR의 상위 32비트와 하위 32비트는 각각 EDX, EAX 레지스터 사용
+    mov rcx, 27
+    rdmsr
+
+    ; APIC 전역 활성/비활성 필드는 비트 11에 위치
+    ; 하위 32비트를 담당하는 EAX 레지스터의 비트 11을 1로 설정 후
+    ; MSR 레지스터에 값을 덮어씀
+    or rax, 0x0800
+    wrmsr
+
+    pop rdx
+    pop rcx
+    pop rax
     ret

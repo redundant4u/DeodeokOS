@@ -8,6 +8,14 @@ START:
     mov ds, ax
     mov es, ax
 
+    ; Application Processor이면 아래 과정을 모두 뛰어넘어서 보호 모드 커널로 이동
+    mov ax, 0x0000
+    mov es, ax
+
+    cmp byte [ es:0x7C09 ], 0x00
+    je .APPLICATIONPROCESSORSTARTPOINT
+
+    ; A20 게이트 활성화
     mov ax, 0x2401
     int 0x15
 
@@ -21,13 +29,14 @@ START:
     out 0x92, al
 
 .A20GATESUCCESS:
+.APPLICATIONPROCESSORSTARTPOINT:
     cli
     lgdt [ GDTR ]
 
     mov eax, 0x4000003B
     mov cr0, eax
 
-    jmp dword 0x18: ( PROTECTEDMODE - $$ + + 0x10000 )
+    jmp dword 0x18: ( PROTECTEDMODE - $$ + 0x10000 )
 
 [BITS 32]
 PROTECTEDMODE:
@@ -41,12 +50,17 @@ PROTECTEDMODE:
     mov esp, 0xFFFE
     mov ebp, 0xFFFE
 
+    ; Application Processor이면 아래 과정을 모두 뛰어넘어서 C언어 커널 엔트리 포인트로 이동
+    cmp byte[ 0x7C09 ], 0x00
+    je .APPLICATIONPROCESSORSTARTPOINT
+
     push ( SWITCHSUCCESSMESSAGE - $$ + 0x10000 )
     push 2
     push 0
     call PRINTMESSAGE
     add esp, 12
 
+.APPLICATIONPROCESSORSTARTPOINT:
     jmp dword 0x18: 0x10200
 
 PRINTMESSAGE:

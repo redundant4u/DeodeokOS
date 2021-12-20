@@ -9,8 +9,8 @@ BOOL kFindMPFloatingPointerAddress(QWORD* pstAddress)
     QWORD qwEBDAAddress;
     QWORD qwSystemBaseMemory;
 
-    kPrintf("Extended BIOS Data Area = [0x%X]\n", (DWORD) (*(WORD*) 0x040E) * 16);
-    kPrintf("System Base Address = [0x%X]\n", (DWORD) (*(WORD*) 0x0413) * 1024);
+    // kPrintf("Extended BIOS Data Area = [0x%X]\n", (DWORD) (*(WORD*) 0x040E) * 16);
+    // kPrintf("System Base Address = [0x%X]\n", (DWORD) (*(WORD*) 0x0413) * 1024);
 
     qwEBDAAddress = *(WORD*) (0x040E);
     qwEBDAAddress *= 16;
@@ -19,7 +19,7 @@ BOOL kFindMPFloatingPointerAddress(QWORD* pstAddress)
     {
         if(kMemCmp(pcMPFloatingPointer, "_MP_", 4) == 0)
         {
-            kPrintf("MP Floating Pointer is in EBDA, [0x%X] Address\n", (QWORD) pcMPFloatingPointer);
+            // kPrintf("MP Floating Pointer is in EBDA, [0x%X] Address\n", (QWORD) pcMPFloatingPointer);
             *pstAddress = (QWORD) pcMPFloatingPointer;
             return TRUE;
         }
@@ -32,7 +32,7 @@ BOOL kFindMPFloatingPointerAddress(QWORD* pstAddress)
     {
         if(kMemCmp(pcMPFloatingPointer, "_MP_", 4) == 0)
         {
-            kPrintf("MP Floating Pointer is in System Base Memory. [0x%X] Address\n");
+            // kPrintf("MP Floating Pointer is in System Base Memory. [0x%X] Address\n");
             *pstAddress = (QWORD) pcMPFloatingPointer;
             return TRUE;
         }
@@ -42,7 +42,7 @@ BOOL kFindMPFloatingPointerAddress(QWORD* pstAddress)
     {
         if(kMemCmp(pcMPFloatingPointer, "_MP_", 4) == 0)
         {
-            kPrintf("MP Floating Pointer is in ROM, [0x%X] Address\n", pcMPFloatingPointer);
+            // kPrintf("MP Floating Pointer is in ROM, [0x%X] Address\n", pcMPFloatingPointer);
             *pstAddress = (QWORD) pcMPFloatingPointer;
             return TRUE;
         }
@@ -51,7 +51,7 @@ BOOL kFindMPFloatingPointerAddress(QWORD* pstAddress)
     return FALSE;
 }
 
-BOOL kAnalysisMPConfiguraionTable(void)
+BOOL kAnalysisMPConfigurationTable(void)
 {
     QWORD qwMPFloatingPointerAddress;
     MPFLOATINGPOINTER* pstMPFloatingPointer;
@@ -72,7 +72,7 @@ BOOL kAnalysisMPConfiguraionTable(void)
 
     // MP 플로팅 테이블 설정
     pstMPFloatingPointer = (MPFLOATINGPOINTER*) qwMPFloatingPointerAddress;
-    gs_stMPConfigurationManager.pstFloatingPointer = pstMPFloatingPointer;
+    gs_stMPConfigurationManager.pstMPFloatingPointer = pstMPFloatingPointer;
     pstMPConfigurationHeader = (MPCONFIGURATIONTABLEHEADER*) ((QWORD) pstMPFloatingPointer->dwMPConfigurationTableAddress & 0xFFFFFFFF);
 
     if(pstMPFloatingPointer->vbMPFeatureByte[1] & MP_FLOATINGPOINTER_FEATUREBYTE2_PICMODE)
@@ -136,7 +136,7 @@ void kPrintMPConfigurationTable(void)
     BUSENTRY* pstBusEntry;
     IOAPICENTRY* pstIOAPICEntry;
     IOINTERRUPTASSIGNMENTENTRY* pstIOAssignmentEntry;
-    LOCALINTERRUPTASSUGNMENTENTRY* pstLocalAssignmentEntry;
+    LOCALINTERRUPTASSIGNMENTENTRY* pstLocalAssignmentEntry;
     QWORD qwBaseEntryAddress;
     char vcStringBuffer[20];
     WORD i;
@@ -148,14 +148,14 @@ void kPrintMPConfigurationTable(void)
     // MP 설정 테이블 처리 함수를 먼저 호출하여 시스템 처리에 필요한 정보를 저장
     kPrintf("============== MP Configuration Table Summary ==============\n");
     pstMPConfigurationManager = kGetMPConfigurationManager();
-    if((pstMPConfigurationManager->qwBaseEntryStartAddress == 0) && (kAnalysisMPConfiguraionTable() == FALSE))
+    if((pstMPConfigurationManager->qwBaseEntryStartAddress == 0) && (kAnalysisMPConfigurationTable() == FALSE))
     {
         kPrintf("MP Configuration Table Analysis Fail\n");
         return;
     }
     kPrintf("MP Configuration Table Analysis Success\n");
 
-    kPrintf("MP Floating Pointer Address: 0x%Q\n", pstMPConfigurationManager->pstFloatingPointer);
+    kPrintf("MP Floating Pointer Address: 0x%Q\n", pstMPConfigurationManager->pstMPFloatingPointer);
     kPrintf("PIC Mode Support: %d\n", pstMPConfigurationManager->bUsePICMode);
     kPrintf("MP Configuration  Table Header Address: 0x%Q\n", pstMPConfigurationManager->pstMPConfigurationTableHeader);
     kPrintf("Base MP Configuration Table Entry Start Address: 0x%Q\n", pstMPConfigurationManager->qwBaseEntryStartAddress);
@@ -172,7 +172,7 @@ void kPrintMPConfigurationTable(void)
 
     // MP 플로팅 포인터 정보를 출력
     kPrintf("============== MP Floating Pointer ==============\n");
-    pstMPFloaingPointer = pstMPConfigurationManager->pstFloatingPointer;
+    pstMPFloaingPointer = pstMPConfigurationManager->pstMPFloatingPointer;
     kMemCpy(vcStringBuffer, pstMPFloaingPointer->vcSignature, 4);
     vcStringBuffer[4] = '\0';
 
@@ -286,7 +286,7 @@ void kPrintMPConfigurationTable(void)
             pstIOAPICEntry = (IOAPICENTRY*) qwBaseEntryAddress;
             kPrintf("Entry Type: I/O APIC\n");
             kPrintf("I/O APIC ID: %d\n", pstIOAPICEntry->bIOAPICID);
-            kPrintf("I/O APIC Version: 0x%X\n", pstIOAPICEntry->bIOPAICVersion);
+            kPrintf("I/O APIC Version: 0x%X\n", pstIOAPICEntry->bIOAPICVersion);
             kPrintf("I/O APIC Flags: 0x%X ", pstIOAPICEntry->bIOAPICFlags);
 
             if(pstIOAPICEntry->bIOAPICFlags == 1)
@@ -322,7 +322,7 @@ void kPrintMPConfigurationTable(void)
             break;
 
         case MP_ENTRYTYPE_LOCALINTERRUPTASSIGNMENT:
-            pstLocalAssignmentEntry = (LOCALINTERRUPTASSUGNMENTENTRY*) qwBaseEntryAddress;
+            pstLocalAssignmentEntry = (LOCALINTERRUPTASSIGNMENTENTRY*) qwBaseEntryAddress;
             kPrintf("Entry Type: Local Interrupt Assignment\n");
             kPrintf("Interrupt Type: 0x%X ", pstLocalAssignmentEntry->bInterruptType);
             kPrintf("(%s)\n", vpcInterruptType[pstLocalAssignmentEntry->bInterruptType]);
@@ -336,7 +336,7 @@ void kPrintMPConfigurationTable(void)
             kPrintf("Destination I/O APIC ID: %d\n", pstLocalAssignmentEntry->bDestinationLocalAPICID);
             kPrintf("Destination I/O APIC INTIN: %d\n\n", pstLocalAssignmentEntry->bDestinationLocalAPICINTIN);
 
-            qwBaseEntryAddress += sizeof(LOCALINTERRUPTASSUGNMENTENTRY);
+            qwBaseEntryAddress += sizeof(LOCALINTERRUPTASSIGNMENTENTRY);
             break;
 
         default:
@@ -365,4 +365,81 @@ int kGetProcessorCount(void)
         return 1;
     }
     return gs_stMPConfigurationManager.iProcessorCount;
+}
+
+IOAPICENTRY* kFindIOAPICEntryForISA(void)
+{
+    MPCONFIGURATIONMANAGER* pstMPManager;
+    MPCONFIGURATIONTABLEHEADER* pstMPHeader;
+    IOINTERRUPTASSIGNMENTENTRY* pstIOAssignmentEntry;
+    IOAPICENTRY* pstIOAPICEntry;
+    QWORD qwEntryAddress;
+    BYTE bEntryType;
+    BOOL bFind = FALSE;
+    int i;
+
+    pstMPHeader = gs_stMPConfigurationManager.pstMPConfigurationTableHeader;
+    qwEntryAddress = gs_stMPConfigurationManager.qwBaseEntryStartAddress;
+
+    // ISA 버스와 관련된 I/O 인터럽트 지정 엔트리를 검색
+    for(i = 0; (i < pstMPHeader->wEntryCount) && (bFind == FALSE); i++)
+    {
+        bEntryType = *(BYTE*) qwEntryAddress;
+        switch(bEntryType)
+        {
+        case MP_ENTRYTYPE_PROCESSOR:
+            qwEntryAddress += sizeof(PROCESSORENTRY);
+            break;
+
+        case MP_ENTRYTYPE_BUS:
+        case MP_ENTRYTYPE_IOAPIC:
+        case MP_ENTRYTYPE_LOCALINTERRUPTASSIGNMENT:
+            qwEntryAddress += 8;
+            break;
+
+        case MP_ENTRYTYPE_IOINTERRUPTASSIGNMENT:
+            pstIOAssignmentEntry = (IOINTERRUPTASSIGNMENTENTRY*) qwEntryAddress;
+            if(pstIOAssignmentEntry->bSourceBUSID == gs_stMPConfigurationManager.bISABusID)
+            {
+                bFind = TRUE;
+            }
+            qwEntryAddress += sizeof(IOINTERRUPTASSIGNMENTENTRY);
+            break;
+        }
+    }
+
+    if(bFind == FALSE)
+    {
+        return NULL;
+    }
+
+    // ISA 버스와 관련된 I/O APIC를 검색하여 I/O APIC의 엔트리를 반환
+    qwEntryAddress = gs_stMPConfigurationManager.qwBaseEntryStartAddress;
+    for(i = 0; i < pstMPHeader->wEntryCount; i++)
+    {
+        bEntryType = *(BYTE*) qwEntryAddress;
+        switch(bEntryType)
+        {
+        case MP_ENTRYTYPE_PROCESSOR:
+            qwEntryAddress += sizeof(PROCESSORENTRY);
+            break;
+
+        case MP_ENTRYTYPE_BUS:
+        case MP_ENTRYTYPE_IOINTERRUPTASSIGNMENT:
+        case MP_ENTRYTYPE_LOCALINTERRUPTASSIGNMENT:
+            qwEntryAddress += 8;
+            break;
+
+        case MP_ENTRYTYPE_IOAPIC:
+            pstIOAPICEntry = (IOAPICENTRY*) qwEntryAddress;
+            if(pstIOAPICEntry->bIOAPICID == pstIOAssignmentEntry->bDestinationIOAPICID)
+            {
+                return pstIOAPICEntry;
+            }
+            qwEntryAddress += sizeof(IOINTERRUPTASSIGNMENTENTRY);
+            break;
+        }
+    }
+
+    return NULL;
 }

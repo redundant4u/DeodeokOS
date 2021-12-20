@@ -14,6 +14,8 @@
 #include "MPConfigurationTable.h"
 #include "LocalAPIC.h"
 #include "MultiProcessor.h"
+#include "PIC.h"
+#include "IOAPIC.h"
 
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
 {
@@ -56,6 +58,8 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
     { "download", "Download Data From Serial ex) download a.txt", kDownloadFile },
     { "showmpinfo", "Show MP Configuration Table Information", kShowMPConfigurationTable },
     { "startap", "Start Application Processor", kStartApplicationProcessor },
+    { "startsymmetricio", "Start Symmetric I/O Mode", kStartSymmetricIOMode },
+    { "showirqintinmap", "Show IRQ->INTIN Mapping Table", kShowIRQINTINMappingTable },
 };
 
 // 실제 쉘을 구현하는 코드
@@ -1961,4 +1965,52 @@ static void kStartApplicationProcessor(const char* pcParameterBuffer)
     }
     kPrintf("Application Processor Start Success\n");
     kPrintf("Bootstrap Processor [APID ID : %d] Start Application Processor\n", kGetAPICID());
+}
+
+static void kStartSymmetricIOMode(const char* pcParameterBuffer)
+{
+    MPCONFIGURATIONMANAGER* pstMPManager;
+    BOOL bInterruptFlag;
+
+    if(kAnalysisMPConfigurationTable() == FALSE)
+    {
+        kPrintf("Analyze MP Configuration Table Fail\n");
+        return;
+    }
+
+    pstMPManager = kGetMPConfigurationManager();
+    if(pstMPManager->bUsePICMode == TRUE)
+    {
+        kOutPortByte(0x22, 0x70);
+        kOutPortByte(0x23, 0x01);
+    }
+
+    kPrintf("Mask All PIC Controller Interrupt\n");
+    kMaskPICInterrupt(0xFFFF);
+
+    kPrintf("Enable Global Local APIC\n");
+    kEnableGlobalLocalAPIC();
+
+    kPrintf("Enable Software Local APIC\n");
+    kEnableSoftwareLocalAPIC();
+
+    kPrintf("Disable CPU Interrupt Flag\n");
+    bInterruptFlag = kSetInterruptFlag(FALSE);
+
+    kSetTaskPriority(0);
+
+    kInitializeLocalVectorTable();
+
+    kPrintf("Initialize IO Redirection Table\n");
+    kInitializeIORedirectionTable();
+
+    kPrintf("Restore CPU Interrupt Flag\n");
+    kSetInterruptFlag(bInterruptFlag);
+
+    kPrintf("Change Symmetric I/O Mode Complete\n");
+}
+
+static void kShowIRQINTINMappingTable(const char* pcParameterBuffer)
+{
+    kPrintIRQToINTINMap();
 }

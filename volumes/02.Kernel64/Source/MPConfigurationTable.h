@@ -84,7 +84,7 @@ typedef struct kIOAPICEntryStruct
 {
     BYTE bEntryType;
     BYTE bIOAPICID;
-    BYTE bIOPAICVersion;
+    BYTE bIOAPICVersion;
     BYTE bIOAPICFlags;
     DWORD dwMemoryMapAddress;
 } IOAPICENTRY;
@@ -109,13 +109,13 @@ typedef struct kLocalInterruptEntryStruct
     BYTE bSourceBUSIRQ;
     BYTE bDestinationLocalAPICID;
     BYTE bDestinationLocalAPICINTIN;
-} LOCALINTERRUPTASSUGNMENTENTRY;
+} LOCALINTERRUPTASSIGNMENTENTRY;
 
 #pragma pack(pop)
 
 typedef struct kMPConfigurationManagerStruct
 {
-    MPFLOATINGPOINTER* pstFloatingPointer;
+    MPFLOATINGPOINTER* pstMPFloatingPointer;
     MPCONFIGURATIONTABLEHEADER* pstMPConfigurationTableHeader;
     QWORD qwBaseEntryStartAddress;
     int iProcessorCount;
@@ -124,9 +124,10 @@ typedef struct kMPConfigurationManagerStruct
 } MPCONFIGURATIONMANAGER;
 
 BOOL kFindMPFloatingPointerAddress(QWORD* pstAddress);
-BOOL kAnalysisMPConfiguraionTable(void);
+BOOL kAnalysisMPConfigurationTable(void);
 MPCONFIGURATIONMANAGER* kGetMPConfigurationManager(void);
 void kPrintMPConfigurationTable(void);
 int kGetProcessorCount(void);
+IOAPICENTRY* kFindIOAPICEntryForISA(void);
 
 #endif

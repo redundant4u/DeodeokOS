@@ -437,10 +437,7 @@ void kSleep(QWORD qwMillisecond)
 
     while((g_qwTickCount - qwLastTickCount) <= qwMillisecond)
     {
-        // kPrintf("qwLastTickCount: %d\n", qwLastTickCount);
-        // kPrintf("g_qwTickCount: %d\n", g_qwTickCount);
-
-        kPrintf("");
+        // kPrintf("");
         kSchedule();
     }
 }

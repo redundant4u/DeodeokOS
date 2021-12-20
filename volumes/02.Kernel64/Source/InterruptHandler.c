@@ -7,6 +7,7 @@
 #include "Descriptor.h"
 #include "AssemblyUtility.h"
 #include "HardDisk.h"
+#include "LocalAPIC.h"
 
 void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode)
 {
@@ -37,6 +38,8 @@ void kCommonInterruptHandler(int iVectorNumber)
     kPrintStringXY(70, 0, vcBuffer);
 
     kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
+
+    kSendEOIToLocalAPIC();
 }
 
 void kKeyboardHandler(int iVectorNumber)
@@ -59,6 +62,8 @@ void kKeyboardHandler(int iVectorNumber)
     }
 
     kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
+
+    kSendEOIToLocalAPIC();
 }
 
 void kTimerHandler(int iVectorNumber)
@@ -74,6 +79,8 @@ void kTimerHandler(int iVectorNumber)
     kPrintStringXY(70, 0, vcBuffer);
 
     kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
+
+    kSendEOIToLocalAPIC();
 
     g_qwTickCount++;
 
@@ -155,4 +162,6 @@ void kHDDHandler(int iVectorNumber)
     }
 
     kSendEOIToPIC(iVectorNumber - PIC_IRQSTARTVECTOR);
+
+    kSendEOIToLocalAPIC();
 }

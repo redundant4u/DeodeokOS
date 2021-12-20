@@ -9,7 +9,7 @@ volatile QWORD g_qwAPICIDAddress = 0;
 
 BOOL kStartUpApplicationProcessor(void)
 {
-    if(kAnalysisMPConfiguraionTable() == FALSE)
+    if(kAnalysisMPConfigurationTable() == FALSE)
     {
         return FALSE;
     }

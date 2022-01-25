@@ -16,13 +16,30 @@ typedef struct kMutexStruct
     BYTE vbPadding[3];
 } MUTEX;
 
+typedef struct kSpinLockStruct
+{
+    volatile DWORD dwLockCount;
+    volatile BYTE bAPICID;
+
+    volatile BOOL bLockFlag;
+
+    volatile BOOL bInterruptFlag;
+
+    BYTE vbPadding[1];
+} SPINLOCK;
+
 #pragma pack(pop)
 
+#if 0
 BOOL kLockForSystemData(void);
 void kUnlockForSystemData(BOOL bInterruptFlag);
+#endif
 
 void kInitializeMutex(MUTEX* pstMutex);
 void kLock(MUTEX* pstMutex);
 void kUnlock(MUTEX* pstMutex);
+void kInitializeSpinLock(SPINLOCK* pstSpinLock);
+void kLockForSpinLock(SPINLOCK* pstSpinLock);
+void kUnlockForSpinLock(SPINLOCK* pstSpinLock);
 
 #endif

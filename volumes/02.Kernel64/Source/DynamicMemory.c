@@ -71,6 +71,8 @@ void kInitializeDynamicMemory(void)
     gs_stDynamicMemory.qwStartAddress = DYNAMICMEMORY_START_ADDRESS + iMetaBlockCount * DYNAMICMEMORY_MIN_SIZE;
     gs_stDynamicMemory.qwEndAddress = kCalculateDynamicMemorySize() + DYNAMICMEMORY_START_ADDRESS;
     gs_stDynamicMemory.qwUsedSize = 0;
+
+    kInitializeSpinLock(&(gs_stDynamicMemory.stSpinLock));
 }
 
 static QWORD kCalculateDynamicMemorySize(void)
@@ -166,14 +168,14 @@ static int kAllocationBuddyBlock(QWORD qwAlignedSize)
 {
     int iBlockListIndex, iFreeOffset;
     int i;
-    BOOL bPreviousInterruptFlag;
 
     iBlockListIndex = kGetBlockListIndexOfMatchSize(qwAlignedSize);
     if(iBlockListIndex == -1)
     {
         return -1;
     }
-    bPreviousInterruptFlag = kLockForSystemData();
+
+    kLockForSpinLock(&(gs_stDynamicMemory.stSpinLock));
 
     for(i = iBlockListIndex; i < gs_stDynamicMemory.iMaxLevelCount; i++)
     {
@@ -186,7 +188,7 @@ static int kAllocationBuddyBlock(QWORD qwAlignedSize)
 
     if(iFreeOffset == -1)
     {
-        kUnlockForSystemData(bPreviousInterruptFlag);
+        kUnlockForSpinLock(&(gs_stDynamicMemory.stSpinLock));
         return -1;
     }
 
@@ -202,7 +204,7 @@ static int kAllocationBuddyBlock(QWORD qwAlignedSize)
             iFreeOffset = iFreeOffset * 2;
         }
     }
-    kUnlockForSystemData(bPreviousInterruptFlag);
+    kUnlockForSpinLock(&(gs_stDynamicMemory.stSpinLock));
 
     return iFreeOffset;
 }
@@ -321,9 +323,8 @@ static BOOL kFreeBuddyBlock(int iBlockListIndex, int iBlockOffset)
     int iBuddyBlockOffset;
     int i;
     BOOL bFlag;
-    BOOL bPreviousInterruptFlag;
 
-    bPreviousInterruptFlag = kLockForSystemData();
+    kLockForSpinLock(&(gs_stDynamicMemory.stSpinLock));
 
     for(i = iBlockListIndex; i < gs_stDynamicMemory.iMaxLevelCount; i++)
     {
@@ -353,7 +354,7 @@ static BOOL kFreeBuddyBlock(int iBlockListIndex, int iBlockOffset)
         iBlockOffset = iBlockOffset / 2;
     }
 
-    kUnlockForSystemData(bPreviousInterruptFlag);
+    kUnlockForSpinLock(&(gs_stDynamicMemory.stSpinLock));
     return TRUE;
 }
 

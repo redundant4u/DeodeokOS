@@ -16,6 +16,7 @@
 #include "MultiProcessor.h"
 #include "PIC.h"
 #include "IOAPIC.h"
+#include "InterruptHandler.h"
 
 SHELLCOMMANDENTRY gs_vstCommandTable[] =
 {
@@ -60,6 +61,8 @@ SHELLCOMMANDENTRY gs_vstCommandTable[] =
     { "startap", "Start Application Processor", kStartApplicationProcessor },
     { "startsymmetricio", "Start Symmetric I/O Mode", kStartSymmetricIOMode },
     { "showirqintinmap", "Show IRQ->INTIN Mapping Table", kShowIRQINTINMappingTable },
+    { "showintproccount", "Show Interrupt Processing Count", kShowInterruptProcessingCount },
+    { "startintloadbal", "Start Interrupt Load Balancing", kStartInterruptLoadBalancing },
 };
 
 // 실제 쉘을 구현하는 코드
@@ -2001,6 +2004,8 @@ static void kStartSymmetricIOMode(const char* pcParameterBuffer)
 
     kInitializeLocalVectorTable();
 
+    kSetSymmetricIOMode(TRUE);
+
     kPrintf("Initialize IO Redirection Table\n");
     kInitializeIORedirectionTable();
 
@@ -2013,4 +2018,84 @@ static void kStartSymmetricIOMode(const char* pcParameterBuffer)
 static void kShowIRQINTINMappingTable(const char* pcParameterBuffer)
 {
     kPrintIRQToINTINMap();
+}
+
+static void kShowInterruptProcessingCount(const char* pcParameterBuffer)
+{
+    INTERRUPTMANAGER* pstInterruptManager;
+    int i;
+    int j;
+    int iProcessCount;
+    char vcBuffer[20];
+    int iRemainLength;
+    int iLineCount;
+
+    kPrintf("================= Interrupt Count =================\n");
+
+    iProcessCount = kGetProcessorCount();
+
+    for(i = 0; i < iProcessCount; i++)
+    {
+        if(i == 0)
+        {
+            kPrintf("IRQ Num\t\t");
+        }
+        else if((i % 4) == 0)
+        {
+            kPrintf("\n      \t\t");
+        }
+        kSPrintf(vcBuffer, "Core %d", i);
+        kPrintf(vcBuffer);
+
+        iRemainLength = 15 - kStrLen(vcBuffer);
+        kMemSet(vcBuffer, ' ', iRemainLength);
+        vcBuffer[iRemainLength] = '\0';
+        kPrintf(vcBuffer);
+    }
+    kPrintf("\n");
+
+    iLineCount = 0;
+    pstInterruptManager = kGetInterruptManager();
+    for(i = 0; i < INTERRUPT_MAXVECTORCOUNT; i++)
+    {
+        for(j = 0; j < iProcessCount; j++)
+        {
+            if(j == 0)
+            {
+                if((iLineCount != 0) && (iLineCount > 10))
+                {
+                    kPrintf("\nPress any key to continue ('q' is exit): ");
+                    if(kGetCh() == 'q')
+                    {
+                        kPrintf("\n");
+                        return ;
+                    }
+                    iLineCount = 0;
+                    kPrintf("\n");
+                }
+                kPrintf("---------------------------------------\n");
+                kPrintf("IRQ %d\t\t", i);
+                iLineCount += 2;
+            }
+            else if((j % 4) == 0)
+            {
+                kPrintf("\n      \t\t");
+                iLineCount++;
+            }
+
+            kSPrintf(vcBuffer, "0x%Q", pstInterruptManager->vvqwCoreInterruptCount[j][i]);
+            kPrintf(vcBuffer);
+            iRemainLength = 15 - kStrLen(vcBuffer);
+            kMemSet(vcBuffer, ' ', iRemainLength);
+            vcBuffer[iRemainLength] = '\0';
+            kPrintf(vcBuffer);
+        }
+        kPrintf("\n");
+    }
+}
+
+static void kStartInterruptLoadBalancing(const char* pcParameterBuffer)
+{
+    kPrintf("Start Interrupt Load Balancing\n");
+    kSetInterruptLoadBalancing(TRUE);
 }
